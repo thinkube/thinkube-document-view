@@ -258,17 +258,29 @@ async function docxLibrary() {
 
 async function renderDocx(bytes, name) {
   const { renderDocx: layOut } = await docxLibrary();
-  toolbar.replaceChildren(
-    element('span', { class: 'name' }, name),
-    element('span', { class: 'status' }, 'Laid out with the book faces. Fields such as the table of contents show what the file saved.'),
-  );
+  const status = element('span', { class: 'status' }, 'Laying out…');
+  toolbar.replaceChildren(element('span', { class: 'name' }, name), status);
   // docx-editor fills its parent and scrolls its own pages.
   const area = element('div', { class: 'docx-area' });
   viewer.replaceChildren(area);
-  const destroy = layOut(area, bytes, assets.harfbuzzWasm, assets.fonts);
+  const view = layOut(area, bytes, assets.harfbuzzWasm, assets.fonts);
+  // How the text is measured decides the line and page breaks: report it.
+  const show = () => {
+    const s = view.status();
+    const measured = s.measurer === 'shaped' ? 'measured with the book faces' : 'estimated widths (faces not loaded)';
+    status.textContent = `${s.pages} pages · ${s.resolving ? 'loading faces…' : measured}` +
+      (s.fontErrors.length ? ` · ${s.fontErrors.join('; ')}` : '');
+    return s.resolving;
+  };
+  const timer = setInterval(() => {
+    if (!show()) clearInterval(timer);
+  }, 500);
   return {
     place: () => ({}),
-    dispose: async () => destroy(),
+    dispose: async () => {
+      clearInterval(timer);
+      view.destroy();
+    },
   };
 }
 

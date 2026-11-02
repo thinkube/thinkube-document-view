@@ -17,19 +17,49 @@ export interface FontFile {
   style: 'normal' | 'italic';
 }
 
+/** What the view reports while and after it lays the document out. */
+export interface DocxStatus {
+  /** `shaped` measures text with HarfBuzz and the face files; `fixed` estimates widths. */
+  measurer: 'fixed' | 'shaped';
+  resolving: boolean;
+  pages: number;
+  fontErrors: string[];
+}
+
 /**
- * Lays the document out as pages in the container and returns its teardown.
- * The shaper's WebAssembly is given by address: a bundle has no path of its own
- * to resolve it from.
+ * Lays the document out as pages in the container. The shaper's WebAssembly is
+ * given by address: a bundle has no path of its own to resolve it from.
+ * Returns the teardown and a reader of the layout's state.
  */
-export function renderDocx(container: HTMLElement, bytes: Uint8Array, wasmUrl: string, fonts: FontFile[]): () => void {
+export function renderDocx(
+  container: HTMLElement,
+  bytes: Uint8Array,
+  wasmUrl: string,
+  fonts: FontFile[],
+): { destroy: () => void; status: () => DocxStatus } {
   setHarfBuzzWasmUrl(wasmUrl);
+  const fontErrors: string[] = [];
   const editor = createDocxEditor({
     document: bytes,
     mode: 'view',
     zoomMode: 'auto',
-    fonts: customFonts({ sources: fonts }),
+    fonts: customFonts({
+      sources: fonts,
+      onFailure: (failure) => fontErrors.push(`${failure.request.family}: ${String(failure.reason)}`),
+    }),
+    onFontError: (error) => fontErrors.push(`${error.code}: ${error.message ?? ''}`),
   });
   editor.attach(container);
-  return () => editor.destroy();
+  return {
+    destroy: () => editor.destroy(),
+    status: () => {
+      const measurement = editor.fontMeasurement();
+      return {
+        measurer: measurement.measurer,
+        resolving: measurement.resolving,
+        pages: editor.getPageGeometry().length,
+        fontErrors: [...fontErrors],
+      };
+    },
+  };
 }
