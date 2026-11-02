@@ -1,0 +1,29 @@
+src/**
+tsconfig.json
+scripts/**
+CLAUDE.md
+.nvmrc
+.gitignore
+**/*.map
+# The extension host loads nothing from node_modules; the page loads these
+# built files and data folders, so only they, and their licences, are packaged.
+node_modules/**
+!node_modules/pdfjs-dist/LICENSE
+!node_modules/pdfjs-dist/build/pdf.min.mjs
+!node_modules/pdfjs-dist/build/pdf.worker.min.mjs
+!node_modules/pdfjs-dist/wasm/**
+!node_modules/pdfjs-dist/standard_fonts/**
+!node_modules/pdfjs-dist/cmaps/**
+!node_modules/pdfjs-dist/iccs/**
+!node_modules/epubjs/license
+!node_modules/epubjs/dist/epub.min.js
+!node_modules/jszip/LICENSE.markdown
+!node_modules/jszip/dist/jszip.min.js
+!node_modules/docx-preview/LICENSE
+!node_modules/docx-preview/dist/docx-preview.min.js
+!node_modules/@fontsource/eb-garamond/LICENSE
+!node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-*.woff2
+!node_modules/@fontsource/crimson-pro/LICENSE
+!node_modules/@fontsource/crimson-pro/files/crimson-pro-latin-*.woff2
+!node_modules/@fontsource/libertinus-serif/LICENSE
+!node_modules/@fontsource/libertinus-serif/files/libertinus-serif-latin-*.woff2

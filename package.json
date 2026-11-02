@@ -1,0 +1,89 @@
+{
+  "name": "thinkube-document-view",
+  "displayName": "Thinkube Document View",
+  "description": "Opens PDF, EPUB and Word (.docx) files in an editor tab: PDF pages with pdf.js, EPUB as an e-reader with epub.js, Word documents with docx-preview. The tab follows the file and redraws when it changes.",
+  "version": "0.1.0",
+  "publisher": "thinkube",
+  "license": "Apache-2.0",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thinkube/thinkube-document-view"
+  },
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "activationEvents": [
+    "onCustomEditor:thinkubeDocumentView.viewer"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "thinkubeDocumentView.viewer",
+        "displayName": "Thinkube Document View",
+        "selector": [
+          {
+            "filenamePattern": "*.pdf"
+          },
+          {
+            "filenamePattern": "*.epub"
+          },
+          {
+            "filenamePattern": "*.docx"
+          }
+        ],
+        "priority": "default"
+      }
+    ],
+    "commands": [
+      {
+        "command": "thinkube-document-view.reload",
+        "title": "Reload document",
+        "category": "Thinkube Document View",
+        "icon": "$(refresh)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "thinkube-document-view.reload",
+          "when": "activeCustomEditorId == thinkubeDocumentView.viewer",
+          "group": "navigation@1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "thinkube-document-view.reload",
+          "when": "activeCustomEditorId == thinkubeDocumentView.viewer"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package",
+    "deploy": "scripts/deploy.sh"
+  },
+  "dependencies": {
+    "@fontsource/crimson-pro": "^5.3.0",
+    "@fontsource/eb-garamond": "^5.3.0",
+    "@fontsource/libertinus-serif": "^5.3.0",
+    "docx-preview": "^0.4.1",
+    "epubjs": "^0.3.93",
+    "jszip": "^3.10.2",
+    "pdfjs-dist": "^6.5.438"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "@types/vscode": "^1.100.0",
+    "@vscode/vsce": "^4.1.0",
+    "typescript": "^5.9.3"
+  }
+}
