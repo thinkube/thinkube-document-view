@@ -282,6 +282,10 @@ window.addEventListener('message', async (event) => {
     return;
   }
   if (message.type !== 'load') return;
+  if (!(message.bytes instanceof Uint8Array)) {
+    showError(`Cannot open ${message.name}: the extension sent ${Object.prototype.toString.call(message.bytes)}, not bytes`);
+    return;
+  }
   // A reload keeps the reader's place in the same kind of document.
   const previous = active && active.kind === message.kind ? active.place() : undefined;
   if (active) {

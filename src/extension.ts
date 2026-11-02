@@ -65,7 +65,9 @@ class DocumentProvider implements vscode.CustomReadonlyEditorProvider {
     // The page asks for the file once its script runs; a change on disk sends it again.
     const send = async () => {
       try {
-        const bytes = await vscode.workspace.fs.readFile(document.uri);
+        // readFile gives a Node Buffer, which postMessage serializes as a plain
+        // object; a plain Uint8Array reaches the page as bytes.
+        const bytes = new Uint8Array(await vscode.workspace.fs.readFile(document.uri));
         await webview.postMessage({ type: 'load', kind, name: path.basename(document.uri.path), bytes });
       } catch (err) {
         await webview.postMessage({ type: 'error', message: `Cannot read ${document.uri.fsPath}: ${String(err)}` });
