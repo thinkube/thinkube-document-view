@@ -5,3 +5,6 @@ dist/
 # Local Claude Code and Tandem state
 .claude/
 .tandem/
+media/fonts/
+media/docx-view.*
+media/docx-assets/

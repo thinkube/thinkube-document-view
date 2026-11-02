@@ -12,25 +12,52 @@ const KINDS: Record<string, 'pdf' | 'epub' | 'docx'> = {
   '.docx': 'docx',
 };
 
-/** Library and font files the page loads, relative to the extension root. */
+/** Library files the page loads, relative to the extension root. */
 const ASSETS = {
   pdfjs: 'node_modules/pdfjs-dist/build/pdf.min.mjs',
   pdfjsWorker: 'node_modules/pdfjs-dist/build/pdf.worker.min.mjs',
   jszip: 'node_modules/jszip/dist/jszip.min.js',
   epubjs: 'node_modules/epubjs/dist/epub.min.js',
-  docxPreview: 'node_modules/docx-preview/dist/docx-preview.min.js',
+  docxView: 'media/docx-view.js',
+  docxViewStyle: 'media/docx-view.css',
+  harfbuzzWasm: 'node_modules/@docx-editor.dev/core/dist/harfbuzz.wasm',
   viewer: 'media/viewer.js',
   style: 'media/viewer.css',
 };
 
 /**
- * The serif faces a Word document from Thinkube's typesetting names; the page
- * declares them so docx-preview sets the document in its own face.
+ * The serif faces of Thinkube's book typesetting, in media/fonts (the deploy
+ * hook fetches them). The Word view measures and draws text with them, so a
+ * document set in them is laid out as Word lays it out.
  */
-const FACES: { family: string; dir: string; file: string }[] = [
-  { family: 'EB Garamond', dir: '@fontsource/eb-garamond', file: 'eb-garamond' },
-  { family: 'Crimson Pro', dir: '@fontsource/crimson-pro', file: 'crimson-pro' },
-  { family: 'Libertinus Serif', dir: '@fontsource/libertinus-serif', file: 'libertinus-serif' },
+const FACES: { family: string; files: [string, number, 'normal' | 'italic'][] }[] = [
+  {
+    family: 'EB Garamond',
+    files: [
+      ['EBGaramond-Regular.otf', 400, 'normal'],
+      ['EBGaramond-Italic.otf', 400, 'italic'],
+      ['EBGaramond-Bold.otf', 700, 'normal'],
+      ['EBGaramond-BoldItalic.otf', 700, 'italic'],
+    ],
+  },
+  {
+    family: 'Crimson Pro',
+    files: [
+      ['CrimsonPro-Regular.ttf', 400, 'normal'],
+      ['CrimsonPro-Italic.ttf', 400, 'italic'],
+      ['CrimsonPro-Bold.ttf', 700, 'normal'],
+      ['CrimsonPro-BoldItalic.ttf', 700, 'italic'],
+    ],
+  },
+  {
+    family: 'Libertinus Serif',
+    files: [
+      ['LibertinusSerif-Regular.otf', 400, 'normal'],
+      ['LibertinusSerif-Italic.otf', 400, 'italic'],
+      ['LibertinusSerif-Bold.otf', 700, 'normal'],
+      ['LibertinusSerif-BoldItalic.otf', 700, 'italic'],
+    ],
+  },
 ];
 
 const VIEW_TYPE = 'thinkubeDocumentView.viewer';
@@ -110,28 +137,21 @@ class DocumentProvider implements vscode.CustomReadonlyEditorProvider {
       webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, ...relative.split('/'))).toString();
     const nonce = crypto.randomBytes(16).toString('base64');
     const source = webview.cspSource;
-    const assets = Object.fromEntries(Object.entries(ASSETS).map(([key, file]) => [key, uri(file)]));
-    const faces = FACES.flatMap(({ family, dir, file }) =>
-      [
-        ['400', 'normal'],
-        ['400', 'italic'],
-        ['700', 'normal'],
-        ['700', 'italic'],
-      ].map(
-        ([weight, style]) =>
-          `@font-face { font-family: "${family}"; font-weight: ${weight}; font-style: ${style}; ` +
-          `src: url("${uri(`node_modules/${dir}/files/${file}-latin-${weight}-${style}.woff2`)}") format("woff2"); }`,
-      ),
-    ).join('\n');
+    const assets: Record<string, unknown> = Object.fromEntries(
+      Object.entries(ASSETS).map(([key, file]) => [key, uri(file)]),
+    );
+    assets.fonts = FACES.flatMap(({ family, files }) =>
+      files.map(([file, weight, style]) => ({ url: uri(`media/fonts/${file}`), family, weight, style })),
+    );
     // pdf.js runs its worker from a blob (a worker script on another origin does
-    // not start in a webview); epub.js and docx-preview load the document's own
+    // not start in a webview); epub.js and docx-editor load the document's own
     // images, fonts and styles as blob and data URLs; inline styles are theirs.
     const csp = [
       "default-src 'none'",
       `img-src ${source} blob: data:`,
       `font-src ${source} blob: data:`,
       `style-src ${source} 'unsafe-inline' blob:`,
-      // pdf.js compiles its WebAssembly decoders (colour, JPEG 2000) in the worker.
+      // pdf.js's decoders and docx-editor's text shaper are WebAssembly.
       `script-src ${source} 'nonce-${nonce}' 'wasm-unsafe-eval'`,
       'worker-src blob:',
       `connect-src ${source}`,
@@ -144,7 +164,6 @@ class DocumentProvider implements vscode.CustomReadonlyEditorProvider {
 <meta http-equiv="Content-Security-Policy" content="${csp}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="${assets.style}">
-<style nonce="${nonce}">${faces}</style>
 </head>
 <body data-kind="${kind}">
 <div id="toolbar"></div>

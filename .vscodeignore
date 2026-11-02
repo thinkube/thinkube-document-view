@@ -1,4 +1,5 @@
 src/**
+web/**
 tsconfig.json
 scripts/**
 CLAUDE.md
@@ -19,11 +20,8 @@ node_modules/**
 !node_modules/epubjs/dist/epub.min.js
 !node_modules/jszip/LICENSE.markdown
 !node_modules/jszip/dist/jszip.min.js
-!node_modules/docx-preview/LICENSE
-!node_modules/docx-preview/dist/docx-preview.min.js
-!node_modules/@fontsource/eb-garamond/LICENSE
-!node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-*.woff2
-!node_modules/@fontsource/crimson-pro/LICENSE
-!node_modules/@fontsource/crimson-pro/files/crimson-pro-latin-*.woff2
-!node_modules/@fontsource/libertinus-serif/LICENSE
-!node_modules/@fontsource/libertinus-serif/files/libertinus-serif-latin-*.woff2
+# docx-editor is bundled into media/docx-view.js; its shaper's WebAssembly is loaded by address.
+!node_modules/@docx-editor.dev/core/LICENSE
+!node_modules/@docx-editor.dev/core/dist/harfbuzz.wasm
+!node_modules/@docx-editor.dev/core/THIRD_PARTY_NOTICES.md
+!node_modules/@docx-editor.dev/core/licenses/**

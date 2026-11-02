@@ -97,9 +97,9 @@ body {
   background: #fff;
 }
 
-/* Word: docx-preview draws white pages on its own grey wrapper. */
+/* Word: docx-editor lays the pages out in an element it fills and scrolls. */
 .docx-area {
-  min-height: 100%;
+  height: 100%;
 }
 
 .error {

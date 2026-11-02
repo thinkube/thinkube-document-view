@@ -246,28 +246,29 @@ async function renderEpub(bytes, name, previous) {
 
 // ---------------------------------------------------------------- Word
 
-async function renderDocx(bytes, name, previous) {
-  await loadScript(assets.jszip);
-  await loadScript(assets.docxPreview);
+let docxView = null;
+
+async function docxLibrary() {
+  if (!docxView) {
+    document.head.append(element('link', { rel: 'stylesheet', href: assets.docxViewStyle }));
+    docxView = await import(assets.docxView);
+  }
+  return docxView;
+}
+
+async function renderDocx(bytes, name) {
+  const { renderDocx: layOut } = await docxLibrary();
   toolbar.replaceChildren(
     element('span', { class: 'name' }, name),
-    element('span', { class: 'status' }, 'Fields such as the table of contents are filled in by Word when it opens the file.'),
+    element('span', { class: 'status' }, 'Laid out with the book faces. Fields such as the table of contents show what the file saved.'),
   );
+  // docx-editor fills its parent and scrolls its own pages.
   const area = element('div', { class: 'docx-area' });
   viewer.replaceChildren(area);
-  await window.docx.renderAsync(bytes, area, undefined, {
-    inWrapper: true,
-    breakPages: true,
-    ignoreLastRenderedPageBreak: true,
-    renderHeaders: true,
-    renderFooters: true,
-    renderFootnotes: true,
-    useBase64URL: true,
-  });
-  if (previous?.fraction) viewer.scrollTop = previous.fraction * viewer.scrollHeight;
+  const destroy = layOut(area, bytes, assets.harfbuzzWasm, assets.fonts);
   return {
-    place: () => ({ fraction: viewer.scrollTop / Math.max(1, viewer.scrollHeight) }),
-    dispose: async () => undefined,
+    place: () => ({}),
+    dispose: async () => destroy(),
   };
 }
 
