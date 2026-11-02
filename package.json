@@ -2,7 +2,7 @@
   "name": "thinkube-document-view",
   "displayName": "Thinkube Document View",
   "description": "Opens PDF, EPUB and Word (.docx) files in an editor tab: PDF pages with pdf.js, EPUB as an e-reader with epub.js, Word documents laid out as pages with docx-editor. The tab follows the file and redraws when it changes.",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "publisher": "thinkube",
   "license": "Apache-2.0",
   "icon": "icon.png",
