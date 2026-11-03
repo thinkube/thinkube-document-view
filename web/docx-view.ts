@@ -49,6 +49,9 @@ export function renderDocx(
     }),
     onFontError: (error) => fontErrors.push(`${error.code}: ${error.message ?? ''}`),
   });
+  // docx-editor's stylesheet is scoped to .docx-editor, and the surface looks up its
+  // scroller as .docx-editor__scroll-container: the host element carries both.
+  container.classList.add('docx-editor', 'docx-editor__scroll-container');
   editor.attach(container);
   return {
     destroy: () => editor.destroy(),
