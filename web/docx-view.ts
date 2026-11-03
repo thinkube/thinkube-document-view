@@ -50,9 +50,14 @@ export function renderDocx(
     onFontError: (error) => fontErrors.push(`${error.code}: ${error.message ?? ''}`),
   });
   // docx-editor's stylesheet is scoped to .docx-editor, and the surface looks up its
-  // scroller as .docx-editor__scroll-container: the host element carries both.
+  // scroller as .docx-editor__scroll-container, which fills the tab. The surface is
+  // an element of its own inside it: .docx-paginated-surface gives the pages their
+  // white sheet and shadow and centres them (margin: auto), and the editor sizes it.
   container.classList.add('docx-editor', 'docx-editor__scroll-container');
-  editor.attach(container);
+  const surface = document.createElement('div');
+  surface.className = 'docx-paginated-surface';
+  container.replaceChildren(surface);
+  editor.attach(surface);
   return {
     destroy: () => editor.destroy(),
     status: () => {

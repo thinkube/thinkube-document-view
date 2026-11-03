@@ -97,9 +97,10 @@ body {
   background: #fff;
 }
 
-/* Word: docx-editor lays the pages out in an element it fills and scrolls. */
+/* Word: the scroller docx-editor's surface sits in; it fills the tab. */
 .docx-area {
   height: 100%;
+  overflow: auto;
 }
 
 .error {
